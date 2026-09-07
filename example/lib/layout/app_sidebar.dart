@@ -111,6 +111,12 @@ class AppSidebar extends StatelessWidget {
                 title: 'Buttons',
                 icon: Icons.smart_button_outlined,
               ),
+              _buildNavItem(
+                context,
+                id: 'icon_buttons',
+                title: 'Icon Buttons',
+                icon: Icons.info_outline_rounded,
+              ),
             ],
           ),
         ),
