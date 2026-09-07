@@ -65,6 +65,59 @@ abstract class MechanixTheme extends StatefulWidget {
       useMaterial3: true,
       colorScheme: colorScheme,
       textTheme: createTextTheme(textColor: colorScheme.onSurface),
+      extensions: const [ButtonThemeDataConfig(), IconButtonThemeDataConfig()],
+      iconButtonTheme: IconButtonThemeData(
+        style: ButtonStyle(
+          mouseCursor: WidgetStateProperty.resolveWith<MouseCursor>((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return SystemMouseCursors.basic;
+            }
+            return SystemMouseCursors.click;
+          }),
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return colorScheme.onSurface.withValues(alpha: 0.10);
+            }
+            if (states.contains(WidgetState.hovered) ||
+                states.contains(WidgetState.focused)) {
+              return Color.alphaBlend(
+                colorScheme.onPrimary.withValues(alpha: 0.08),
+                colorScheme.primary,
+              );
+            }
+            if (states.contains(WidgetState.pressed)) {
+              return Color.alphaBlend(
+                colorScheme.onPrimary.withValues(alpha: 0.12),
+                colorScheme.primary,
+              );
+            }
+            return colorScheme.primary;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return colorScheme.onSurface.withValues(alpha: 0.38);
+            }
+            return colorScheme.onPrimary;
+          }),
+          iconColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return colorScheme.onSurface.withValues(alpha: 0.38);
+            }
+            return colorScheme.onPrimary;
+          }),
+          side: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.focused)) {
+              return BorderSide(
+                color: colorScheme.secondary,
+                width: 3.0,
+              );
+            }
+            return null;
+          }),
+          animationDuration: const Duration(milliseconds: 200),
+        ),
+      ),
       filledButtonTheme: FilledButtonThemeData(
         style: ButtonStyle(
           mouseCursor: WidgetStateProperty.resolveWith<MouseCursor>((states) {

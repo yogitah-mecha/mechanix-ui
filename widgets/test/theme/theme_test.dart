@@ -60,6 +60,13 @@ void main() {
       expect(textTheme.titleMedium?.color, equals(theme.colorScheme.onSurface));
     });
 
+    test('MechanixTheme.createTheme creates theme with iconButtonTheme and IconButtonThemeDataConfig extension', () {
+      final theme = MechanixTheme.light;
+
+      expect(theme.iconButtonTheme, isNotNull);
+      expect(theme.extension<IconButtonThemeDataConfig>(), isNotNull);
+    });
+
     test('MechanixTheme.createTheme creates theme from custom colorScheme', () {
       const customColorScheme = ColorScheme.light(
         primary: Colors.indigo,

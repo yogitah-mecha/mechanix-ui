@@ -51,7 +51,7 @@ class ButtonSizeConfig {
           labelTextStyle: textTheme.titleMedium!,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           iconLabelGap: 8,
-          minTapTargetSize: 0,
+          minTapTargetSize: 48,
         );
 
       case ButtonSize.large:
