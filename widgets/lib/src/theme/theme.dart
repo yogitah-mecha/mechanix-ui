@@ -108,10 +108,7 @@ abstract class MechanixTheme extends StatefulWidget {
           }),
           side: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.focused)) {
-              return BorderSide(
-                color: colorScheme.secondary,
-                width: 3.0,
-              );
+              return BorderSide(color: colorScheme.secondary, width: 3.0);
             }
             return null;
           }),

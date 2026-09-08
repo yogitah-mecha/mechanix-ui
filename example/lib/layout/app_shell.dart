@@ -49,9 +49,7 @@ class _AppShellState extends State<AppShell> {
 
     if (!isDesktop) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(_appBarTitle(_selectedSection)),
-        ),
+        appBar: AppBar(title: Text(_appBarTitle(_selectedSection))),
         drawer: Drawer(
           backgroundColor: theme.colorScheme.surfaceContainerLow,
           child: SafeArea(
@@ -92,9 +90,7 @@ class _AppShellState extends State<AppShell> {
               ),
             ),
           ),
-          Expanded(
-            child: _MainContent(section: _selectedSection),
-          ),
+          Expanded(child: _MainContent(section: _selectedSection)),
         ],
       ),
     );
@@ -178,12 +174,7 @@ class _MainContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          content,
-        ],
-      ),
+      body: ListView(padding: const EdgeInsets.all(24), children: [content]),
     );
   }
 }
