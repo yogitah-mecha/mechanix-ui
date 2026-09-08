@@ -22,15 +22,30 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - assets/fonts/OFL.txt
+
   fonts:
     - family: MechanixIcons
       fonts:
         - asset: assets/fonts/MechanixIcons.ttf
+    - family: SpaceGrotesk
+      fonts:
+        - asset: assets/fonts/SpaceGrotesk-Light.ttf
+          weight: 300
+        - asset: assets/fonts/SpaceGrotesk-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/SpaceGrotesk-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/SpaceGrotesk-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/SpaceGrotesk-Bold.ttf
+          weight: 700
 
 icon_font:
   input_svg_dir: assets/icons/svg
   output_font_file: assets/fonts/MechanixIcons.ttf
-  output_class_file: lib/src/icons/mechanix_icons.dart
+  output_class_file: lib/src/icons/icons.dart
   class_name: MechanixIcons
   font_name: MechanixIcons
   package: widgets

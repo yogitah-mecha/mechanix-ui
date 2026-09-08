@@ -2,5 +2,23 @@
 /// specifically for building Mechanix Apps.
 library;
 
+// Foundations (Tokens)
+export 'src/foundation/colors/colors.dart';
+export 'src/foundation/shape/shape_theme.dart';
+export 'src/foundation/spacing/spacing.dart';
+export 'src/foundation/typography/typography.dart';
+
 // Icons
-export 'src/icons/mechanix_icons.dart';
+export 'src/icons/icons.dart';
+
+// Theme
+export 'src/theme/theme.dart';
+
+// Extensions
+export 'src/extensions/build_context.dart';
+export 'src/extensions/shape_extension.dart';
+
+// Components
+export 'src/components/button/button_style.dart';
+export 'src/components/button/button_theme.dart';
+export 'src/components/button/button.dart';
