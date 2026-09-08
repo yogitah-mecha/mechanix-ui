@@ -33,7 +33,7 @@ enum IconButtonSize {
   xLarge,
 
   /// 136x136 button dimension, 40px icon size.
-  twoXLarge,
+  xxLarge,
 }
 
 /// Alias for [ButtonType] to define corner/shape style.

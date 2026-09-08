@@ -43,7 +43,7 @@ void main() {
         (IconButtonSize.medium, 56.0, 24.0),
         (IconButtonSize.large, 72.0, 30.86),
         (IconButtonSize.xLarge, 96.0, 32.0),
-        (IconButtonSize.twoXLarge, 136.0, 40.0),
+        (IconButtonSize.xxLarge, 136.0, 40.0),
       ];
 
       for (final spec in specs) {
@@ -189,28 +189,31 @@ void main() {
       expect(side?.width, equals(3.0));
     });
 
-    testWidgets('standard icon button has no border by default and 3px border only when focused', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MechanixIconButton.standard(
-              icon: Icons.star,
-              onPressed: () {},
+    testWidgets(
+      'standard icon button has no border by default and 3px border only when focused',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MechanixIconButton.standard(
+                icon: Icons.star,
+                onPressed: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      final iconButton = tester.widget<IconButton>(find.byType(IconButton));
-      final defaultSide = iconButton.style?.side?.resolve({});
-      final focusedSide = iconButton.style?.side?.resolve({WidgetState.focused});
+        final iconButton = tester.widget<IconButton>(find.byType(IconButton));
+        final defaultSide = iconButton.style?.side?.resolve({});
+        final focusedSide = iconButton.style?.side?.resolve({
+          WidgetState.focused,
+        });
 
-      expect(defaultSide, isNull);
-      expect(focusedSide, isNotNull);
-      expect(focusedSide?.width, equals(3.0));
-    });
+        expect(defaultSide, isNull);
+        expect(focusedSide, isNotNull);
+        expect(focusedSide?.width, equals(3.0));
+      },
+    );
 
     testWidgets('verifies 48x48 min tap target for xSmall icon button', (
       WidgetTester tester,
@@ -270,6 +273,75 @@ void main() {
       // Verify the tap target constraints are at least 48x48
       expect(constrainedBox.constraints.minWidth, equals(48.0));
       expect(constrainedBox.constraints.minHeight, equals(48.0));
+    });
+
+    testWidgets('resolves state-aware colors from IconButtonThemeDataConfig WidgetStateProperty', (
+      WidgetTester tester,
+    ) async {
+      final themeConfig = IconButtonThemeDataConfig(
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) return Colors.grey;
+          if (states.contains(WidgetState.hovered)) return Colors.blue;
+          return Colors.purple;
+        }),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MechanixIconButtonTheme(
+              data: themeConfig,
+              child: MechanixIconButton.filled(
+                icon: Icons.star,
+                onPressed: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final iconButton = tester.widget<IconButton>(find.byType(IconButton));
+      final resolvedNormal = iconButton.style?.backgroundColor?.resolve({});
+      final resolvedDisabled = iconButton.style?.backgroundColor?.resolve({WidgetState.disabled});
+
+      expect(resolvedNormal, equals(Colors.purple));
+      expect(resolvedDisabled, equals(Colors.grey));
+    });
+
+    testWidgets('resolves state-aware side from IconButtonThemeDataConfig WidgetStateProperty', (
+      WidgetTester tester,
+    ) async {
+      final themeConfig = IconButtonThemeDataConfig(
+        side: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.focused)) {
+            return const BorderSide(color: Colors.red, width: 4.0);
+          }
+          return const BorderSide(color: Colors.green, width: 2.0);
+        }),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MechanixIconButtonTheme(
+              data: themeConfig,
+              child: MechanixIconButton.filled(
+                icon: Icons.star,
+                onPressed: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final iconButton = tester.widget<IconButton>(find.byType(IconButton));
+      final resolvedNormalSide = iconButton.style?.side?.resolve({});
+      final resolvedFocusedSide = iconButton.style?.side?.resolve({WidgetState.focused});
+
+      expect(resolvedNormalSide?.color, equals(Colors.green));
+      expect(resolvedNormalSide?.width, equals(2.0));
+      expect(resolvedFocusedSide?.color, equals(Colors.red));
+      expect(resolvedFocusedSide?.width, equals(4.0));
     });
   });
 }

@@ -121,33 +121,6 @@ class MechanixIconButton extends StatelessWidget {
     this.theme,
   }) : variant = IconButtonVariant.outline;
 
-  /// Alias constructor for an Outline [MechanixIconButton].
-  const MechanixIconButton.outlined({
-    super.key,
-    required this.onPressed,
-    required this.icon,
-    this.onLongPress,
-    this.type = IconButtonType.square,
-    this.size = IconButtonSize.medium,
-    this.showFocusIndicator = true,
-    this.focusNode,
-    this.autofocus = false,
-    this.duration = const Duration(milliseconds: 200),
-    this.curve = const Cubic(0.2, 0.0, 0.0, 1.0),
-    this.backgroundColor,
-    this.hoverColor,
-    this.pressedColor,
-    this.disabledColor,
-    this.foregroundColor,
-    this.hoverForegroundColor,
-    this.pressedForegroundColor,
-    this.disabledForegroundColor,
-    this.borderColor,
-    this.borderWidth,
-    this.focusBorderColor,
-    this.theme,
-  }) : variant = IconButtonVariant.outline;
-
   /// Factory constructor for a Standard [MechanixIconButton].
   const MechanixIconButton.standard({
     super.key,

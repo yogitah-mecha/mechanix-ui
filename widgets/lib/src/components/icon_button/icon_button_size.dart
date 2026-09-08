@@ -51,7 +51,7 @@ class IconButtonSizeConfig {
           minTapTargetSize: 0,
         );
 
-      case IconButtonSize.twoXLarge:
+      case IconButtonSize.xxLarge:
         return const IconButtonSizeConfig(
           dimension: 136,
           iconSize: 40,
