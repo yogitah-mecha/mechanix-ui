@@ -45,7 +45,7 @@ class IconButtonPreview extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
-            Icons.radio_button_checked_rounded,
+            Icons.info_outline_rounded,
             size: 28,
             color: colorScheme.primary,
           ),
@@ -150,18 +150,6 @@ class IconButtonPreview extends StatelessWidget {
       runSpacing: 12,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        // MechanixIconButton(
-        //   variant: item.variant,
-        //   type: IconButtonType.square,
-        //   icon: Icons.add_rounded,
-        //   onPressed: () {},
-        // ),
-        // MechanixIconButton(
-        //   variant: item.variant,
-        //   type: IconButtonType.rounded,
-        //   icon: Icons.favorite_rounded,
-        //   onPressed: () {},
-        // ),
         MechanixIconButton(
           variant: item.variant,
           type: IconButtonType.square,
@@ -319,7 +307,10 @@ class IconButtonPreview extends StatelessWidget {
                     ),
                     Column(
                       children: [
-                        Text('Disabled', style: theme.textTheme.bodySmall),
+                        Text(
+                          'Filled Disabled',
+                          style: theme.textTheme.bodySmall,
+                        ),
                         const SizedBox(height: 6),
                         const MechanixIconButton.filled(
                           icon: Icons.block_rounded,
@@ -335,6 +326,32 @@ class IconButtonPreview extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         const MechanixIconButton.outline(
+                          icon: Icons.block_rounded,
+                          onPressed: null,
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          'Tonal Disabled',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 6),
+                        const MechanixIconButton.tonal(
+                          icon: Icons.block_rounded,
+                          onPressed: null,
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          'Standard Disabled',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 6),
+                        const MechanixIconButton.standard(
                           icon: Icons.block_rounded,
                           onPressed: null,
                         ),
