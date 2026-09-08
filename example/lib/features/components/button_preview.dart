@@ -113,6 +113,18 @@ class ButtonPreview extends StatelessWidget {
         variant: ButtonVariant.outline,
         type: ButtonType.rounded,
       ),
+      _VariantTypeItem(
+        title: 'Text - Square',
+        description: 'Transparent background and no border with square corners',
+        variant: ButtonVariant.text,
+        type: ButtonType.square,
+      ),
+      _VariantTypeItem(
+        title: 'Text - Rounded',
+        description: 'Transparent background and no border with rounded pill corners',
+        variant: ButtonVariant.text,
+        type: ButtonType.rounded,
+      ),
     ];
 
     return Column(
@@ -321,6 +333,23 @@ class ButtonPreview extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         const MechanixButton.outline(
+                          icon: Icons.block_rounded,
+                          label: 'Disabled',
+                          onPressed: null,
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Text Disabled',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const MechanixButton.text(
                           icon: Icons.block_rounded,
                           label: 'Disabled',
                           onPressed: null,

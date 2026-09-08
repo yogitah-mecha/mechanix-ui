@@ -5,7 +5,7 @@ export 'button_size.dart';
 
 /// A highly customizable button component following the
 /// Mechanix design system specifications, wrapping Flutter Material's
-/// [FilledButton] and [OutlinedButton].
+/// [FilledButton], [OutlinedButton], and [TextButton].
 class MechanixButton extends StatelessWidget {
   const MechanixButton({
     super.key,
@@ -143,6 +143,40 @@ class MechanixButton extends StatelessWidget {
     this.theme,
   }) : variant = ButtonVariant.outline;
 
+  /// Factory constructor for a Text [MechanixButton].
+  const MechanixButton.text({
+    super.key,
+    required this.onPressed,
+    this.onLongPress,
+    this.label,
+    this.labelText,
+    this.icon,
+    this.showIcon = true,
+    this.type = ButtonType.square,
+    this.size = ButtonSize.medium,
+    this.widthSizing = ButtonLayoutSizing.hug,
+    this.heightSizing = ButtonLayoutSizing.hug,
+    this.width,
+    this.height,
+    this.showFocusIndicator = true,
+    this.focusNode,
+    this.autofocus = false,
+    this.duration = const Duration(milliseconds: 200),
+    this.curve = const Cubic(0.2, 0.0, 0.0, 1.0),
+    this.backgroundColor,
+    this.hoverColor,
+    this.pressedColor,
+    this.disabledColor,
+    this.foregroundColor,
+    this.hoverForegroundColor,
+    this.pressedForegroundColor,
+    this.disabledForegroundColor,
+    this.borderColor,
+    this.borderWidth,
+    this.focusBorderColor,
+    this.theme,
+  }) : variant = ButtonVariant.text;
+
   /// Callback when button is clicked. If null, button is disabled.
   final VoidCallback? onPressed;
 
@@ -164,7 +198,7 @@ class MechanixButton extends StatelessWidget {
   /// Corner/shape style type ([ButtonType.square], [rounded]).
   final ButtonType type;
 
-  /// Visual style variant ([ButtonVariant.filled], [outline]).
+  /// Visual style variant ([ButtonVariant.filled], [outline], [text]).
   final ButtonVariant variant;
 
   /// Button scale size ([ButtonSize.xSmall], [small], [medium], [large], [xLarge]).
@@ -284,6 +318,16 @@ class MechanixButton extends StatelessWidget {
         break;
       case ButtonVariant.outline:
         buttonWidget = OutlinedButton(
+          onPressed: onPressed,
+          onLongPress: onLongPress,
+          focusNode: focusNode,
+          autofocus: autofocus,
+          style: buttonStyle,
+          child: buttonChild,
+        );
+        break;
+      case ButtonVariant.text:
+        buttonWidget = TextButton(
           onPressed: onPressed,
           onLongPress: onLongPress,
           focusNode: focusNode,
