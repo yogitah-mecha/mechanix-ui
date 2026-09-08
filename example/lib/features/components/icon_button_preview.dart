@@ -438,9 +438,9 @@ class IconButtonPreview extends StatelessWidget {
         codeName: 'xLarge',
       ),
       _SizeItem(
-        size: IconButtonSize.twoXLarge,
-        name: '2X Large (twoXLarge)',
-        codeName: 'twoXLarge',
+        size: IconButtonSize.xxLarge,
+        name: '2X Large (xxLarge)',
+        codeName: 'xxLarge',
       ),
     ];
 

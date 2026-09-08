@@ -32,7 +32,6 @@ abstract class IconButtonStyleResolver {
     final shapeTheme = context.shape;
 
     // 1. Shape resolution:
-    // Custom theme.borderRadius -> ShapeTheme.full (rounded) -> ShapeTheme.none (square)
     final borderRadius =
         theme?.borderRadius ??
         switch (type) {
@@ -74,21 +73,36 @@ abstract class IconButtonStyleResolver {
         break;
     }
 
-    final baseBg = customBackgroundColor ?? theme?.backgroundColor ?? defaultBg;
-    final baseFg = customForegroundColor ?? theme?.foregroundColor ?? defaultFg;
-    final baseBorderColor =
-        customBorderColor ?? theme?.borderColor ?? defaultBorderColor;
-    final baseBorderWidth =
-        customBorderWidth ?? theme?.borderWidth ?? defaultBorderWidth;
+    final baseBg = customBackgroundColor ?? defaultBg;
+    final baseFg = customForegroundColor ?? defaultFg;
+    final baseBorderColor = customBorderColor ?? defaultBorderColor;
+    final baseBorderWidth = customBorderWidth ?? defaultBorderWidth;
 
     // 3. State-aware background resolution
     final backgroundColorProperty = WidgetStateProperty.resolveWith<Color?>((
       states,
     ) {
+      if (states.contains(WidgetState.disabled) &&
+          customDisabledColor != null) {
+        return customDisabledColor;
+      }
+      if (states.contains(WidgetState.pressed) && customPressedColor != null) {
+        return customPressedColor;
+      }
+      if (states.contains(WidgetState.hovered) && customHoverColor != null) {
+        return customHoverColor;
+      }
+      if (customBackgroundColor != null) {
+        return customBackgroundColor;
+      }
+
+      // Resolve from theme WidgetStateProperty if provided
+      if (theme?.backgroundColor != null) {
+        final themeColor = theme!.backgroundColor!.resolve(states);
+        if (themeColor != null) return themeColor;
+      }
+
       if (states.contains(WidgetState.disabled)) {
-        if (customDisabledColor != null || theme?.disabledColor != null) {
-          return customDisabledColor ?? theme?.disabledColor;
-        }
         return switch (variant) {
           IconButtonVariant.filled ||
           IconButtonVariant.tonal => scheme.onSurface.withValues(alpha: 0.10),
@@ -97,51 +111,20 @@ abstract class IconButtonStyleResolver {
         };
       }
 
-      if (states.contains(WidgetState.pressed)) {
-        if (customPressedColor != null || theme?.pressedColor != null) {
-          return customPressedColor ?? theme?.pressedColor;
-        }
+      if (states.contains(WidgetState.pressed) ||
+          states.contains(WidgetState.hovered) ||
+          states.contains(WidgetState.focused)) {
         final stateLayerColor = switch (variant) {
           IconButtonVariant.filled => scheme.onPrimary,
           IconButtonVariant.tonal => scheme.onSecondaryContainer,
           IconButtonVariant.outline ||
           IconButtonVariant.standard => scheme.onSurfaceVariant,
         };
+        final opacity = states.contains(WidgetState.pressed) ? 0.12 : 0.08;
         return _applyStateLayer(
           baseColor: baseBg,
           stateLayerColor: stateLayerColor,
-          opacity: 0.12,
-        );
-      }
-
-      if (states.contains(WidgetState.hovered)) {
-        if (customHoverColor != null || theme?.hoverColor != null) {
-          return customHoverColor ?? theme?.hoverColor;
-        }
-        final stateLayerColor = switch (variant) {
-          IconButtonVariant.filled => scheme.onPrimary,
-          IconButtonVariant.tonal => scheme.onSecondaryContainer,
-          IconButtonVariant.outline ||
-          IconButtonVariant.standard => scheme.onSurfaceVariant,
-        };
-        return _applyStateLayer(
-          baseColor: baseBg,
-          stateLayerColor: stateLayerColor,
-          opacity: 0.08,
-        );
-      }
-
-      if (states.contains(WidgetState.focused)) {
-        final stateLayerColor = switch (variant) {
-          IconButtonVariant.filled => scheme.onPrimary,
-          IconButtonVariant.tonal => scheme.onSecondaryContainer,
-          IconButtonVariant.outline ||
-          IconButtonVariant.standard => scheme.onSurfaceVariant,
-        };
-        return _applyStateLayer(
-          baseColor: baseBg,
-          stateLayerColor: stateLayerColor,
-          opacity: 0.08,
+          opacity: opacity,
         );
       }
 
@@ -152,36 +135,49 @@ abstract class IconButtonStyleResolver {
     final foregroundColorProperty = WidgetStateProperty.resolveWith<Color?>((
       states,
     ) {
+      if (states.contains(WidgetState.disabled) &&
+          customDisabledForegroundColor != null) {
+        return customDisabledForegroundColor;
+      }
+      if (states.contains(WidgetState.pressed) &&
+          customPressedForegroundColor != null) {
+        return customPressedForegroundColor;
+      }
+      if (states.contains(WidgetState.hovered) &&
+          customHoverForegroundColor != null) {
+        return customHoverForegroundColor;
+      }
+      if (customForegroundColor != null) {
+        return customForegroundColor;
+      }
+
+      // Resolve from theme WidgetStateProperty if provided
+      if (theme?.foregroundColor != null) {
+        final themeFg = theme!.foregroundColor!.resolve(states);
+        if (themeFg != null) return themeFg;
+      }
+
       if (states.contains(WidgetState.disabled)) {
-        return customDisabledForegroundColor ??
-            theme?.disabledForegroundColor ??
-            scheme.onSurface.withValues(alpha: 0.38);
-      }
-      if (states.contains(WidgetState.pressed)) {
-        return customPressedForegroundColor ??
-            theme?.pressedForegroundColor ??
-            baseFg;
-      }
-      if (states.contains(WidgetState.hovered)) {
-        return customHoverForegroundColor ??
-            theme?.hoverForegroundColor ??
-            baseFg;
+        return scheme.onSurface.withValues(alpha: 0.38);
       }
       return baseFg;
     });
 
     // 5. State-aware border side resolution
     final sideProperty = WidgetStateProperty.resolveWith<BorderSide?>((states) {
+      // Resolve from theme WidgetStateProperty if provided
+      if (theme?.side != null) {
+        final themeSide = theme!.side!.resolve(states);
+        if (themeSide != null) return themeSide;
+      }
+
       final defaultFocusColor = switch (variant) {
         IconButtonVariant.standard => scheme.secondary,
         _ => scheme.secondaryFixedDim,
       };
 
-      final focusBorderColor =
-          customFocusBorderColor ??
-          theme?.focusBorderColor ??
-          defaultFocusColor;
-      final focusWidth = customBorderWidth ?? theme?.borderWidth ?? 3.0;
+      final focusBorderColor = customFocusBorderColor ?? defaultFocusColor;
+      final focusWidth = customBorderWidth ?? 3.0;
 
       if (states.contains(WidgetState.focused) && showFocusIndicator) {
         return BorderSide(color: focusBorderColor, width: focusWidth);
