@@ -149,6 +149,17 @@ abstract class ButtonStyleResolver {
 
     // 5. State-aware border side
     final sideProperty = WidgetStateProperty.resolveWith<BorderSide?>((states) {
+      if (states.contains(WidgetState.focused) && showFocusIndicator) {
+        final focColor =
+            customFocusBorderColor ??
+            theme?.focusBorderColor ??
+            (isOutline
+                ? (baseBorderColor ?? scheme.outline)
+                : scheme.secondaryFixedDim);
+        final focWidth = customBorderWidth ?? theme?.borderWidth ?? 3.0;
+        return BorderSide(color: focColor, width: focWidth);
+      }
+
       if (isOutline) {
         final w = baseBorderWidth ?? 1.0;
         if (states.contains(WidgetState.disabled)) {
@@ -156,15 +167,6 @@ abstract class ButtonStyleResolver {
             color: baseBorderColor ?? scheme.onSurface.withValues(alpha: 0.10),
             width: w,
           );
-        }
-        if (states.contains(WidgetState.focused) && showFocusIndicator) {
-          final focColor =
-              customFocusBorderColor ??
-              theme?.focusBorderColor ??
-              baseBorderColor ??
-              scheme.outline;
-          final focWidth = customBorderWidth ?? theme?.borderWidth ?? 3.0;
-          return BorderSide(color: focColor, width: focWidth);
         }
         return BorderSide(color: baseBorderColor ?? scheme.outline, width: w);
       } else if (isText) {
@@ -185,13 +187,6 @@ abstract class ButtonStyleResolver {
       } else {
         if (baseBorderColor != null) {
           final w = baseBorderWidth ?? 0.0;
-          if (states.contains(WidgetState.focused) &&
-              showFocusIndicator &&
-              (customFocusBorderColor != null ||
-                  theme?.focusBorderColor != null)) {
-            final focColor = customFocusBorderColor ?? theme?.focusBorderColor!;
-            return BorderSide(color: focColor!, width: w);
-          }
           return BorderSide(color: baseBorderColor, width: w);
         }
         return null;
