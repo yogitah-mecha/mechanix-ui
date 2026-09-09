@@ -24,3 +24,4 @@ export 'src/components/button/button_theme.dart';
 export 'src/components/button/button.dart';
 export 'src/components/checkbox/checkbox_theme.dart';
 export 'src/components/checkbox/checkbox.dart';
+export 'src/components/icon_button/icon_button.dart';
