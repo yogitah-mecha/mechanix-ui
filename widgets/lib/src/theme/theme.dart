@@ -214,6 +214,45 @@ abstract class MechanixTheme extends StatefulWidget {
           animationDuration: const Duration(milliseconds: 200),
         ),
       ),
+      textButtonTheme: TextButtonThemeData(
+        style: ButtonStyle(
+          mouseCursor: WidgetStateProperty.resolveWith<MouseCursor>((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return SystemMouseCursors.basic;
+            }
+
+            return SystemMouseCursors.click;
+          }),
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+          backgroundColor: WidgetStateProperty.all(Colors.transparent),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return colorScheme.onSurface.withValues(alpha: 0.38);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return colorScheme.onSecondaryContainer;
+            }
+            return colorScheme.onSurface;
+          }),
+          iconColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return colorScheme.onSurface.withValues(alpha: 0.38);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return colorScheme.onSecondaryContainer;
+            }
+            return colorScheme.onSurface;
+          }),
+          side: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.focused)) {
+              return BorderSide(color: colorScheme.outline, width: 3.0);
+            }
+            return null;
+          }),
+          // splashFactory: const TouchOptimizedSplashFactory(),
+          animationDuration: const Duration(milliseconds: 200),
+        ),
+      ),
       checkboxTheme: _createCheckboxTheme(colorScheme),
       extensions: [
         ShapeTheme.standard(),
