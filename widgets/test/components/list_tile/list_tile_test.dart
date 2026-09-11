@@ -185,6 +185,29 @@ void main() {
       expect(container.constraints?.minHeight, equals(48.0));
     });
 
+    testWidgets(
+      'resolves ListTileThemeDataConfig from MechanixTheme extension',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: MechanixTheme.dark,
+            home: Scaffold(body: MechanixListTile(label: 'Theme Config Tile')),
+          ),
+        );
+
+        final tileContext = tester.element(find.byType(MechanixListTile));
+        final config = Theme.of(tileContext)
+            .extension<ListTileThemeDataConfig>();
+        expect(config, isNotNull);
+        expect(
+          config?.focusBorderColor,
+          equals(MechanixTheme.darkColorScheme.outline),
+        );
+        expect(config?.focusBorderWidth, equals(3.0));
+        expect(config?.showFocusIndicator, isTrue);
+      },
+    );
+
     testWidgets('MechanixSegmentedList separates tiles with default 2px gap', (
       WidgetTester tester,
     ) async {
