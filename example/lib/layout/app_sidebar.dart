@@ -131,6 +131,12 @@ class AppSidebar extends StatelessWidget {
               ),
               _buildNavItem(
                 context,
+                id: 'snackbars',
+                title: 'Snackbars',
+                icon: Icons.chat_bubble_outline,
+              ),
+              _buildNavItem(
+                context,
                 id: 'lists',
                 title: 'Lists',
                 icon: Icons.view_list_outlined,

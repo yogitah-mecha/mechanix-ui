@@ -27,6 +27,7 @@ export 'src/components/checkbox/checkbox.dart';
 export 'src/components/icon_button/icon_button.dart';
 export 'src/components/radio/radio.dart';
 export 'src/components/radio/radio_theme.dart';
+export 'src/components/snackbar/snackbar.dart';
 export 'src/components/list_tile/list_tile.dart';
 export 'src/components/list_tile/expandable_list_tile.dart';
 export 'src/components/list_tile/draggable_list_tile.dart';
