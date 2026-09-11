@@ -214,7 +214,47 @@ abstract class MechanixTheme extends StatefulWidget {
           animationDuration: const Duration(milliseconds: 200),
         ),
       ),
+      textButtonTheme: TextButtonThemeData(
+        style: ButtonStyle(
+          mouseCursor: WidgetStateProperty.resolveWith<MouseCursor>((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return SystemMouseCursors.basic;
+            }
+
+            return SystemMouseCursors.click;
+          }),
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+          backgroundColor: WidgetStateProperty.all(Colors.transparent),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return colorScheme.onSurface.withValues(alpha: 0.38);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return colorScheme.onSecondaryContainer;
+            }
+            return colorScheme.onSurface;
+          }),
+          iconColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return colorScheme.onSurface.withValues(alpha: 0.38);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return colorScheme.onSecondaryContainer;
+            }
+            return colorScheme.onSurface;
+          }),
+          side: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.focused)) {
+              return BorderSide(color: colorScheme.outline, width: 3.0);
+            }
+            return null;
+          }),
+          // splashFactory: const TouchOptimizedSplashFactory(),
+          animationDuration: const Duration(milliseconds: 200),
+        ),
+      ),
       checkboxTheme: _createCheckboxTheme(colorScheme),
+      radioTheme: _createRadioTheme(colorScheme),
       extensions: [
         ShapeTheme.standard(),
         CheckboxThemeDataConfig(
@@ -225,6 +265,7 @@ abstract class MechanixTheme extends StatefulWidget {
         ),
         ButtonThemeDataConfig(),
         IconButtonThemeDataConfig(),
+        RadioThemeDataConfig(),
       ],
     );
   }
@@ -295,6 +336,36 @@ abstract class MechanixTheme extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(2.0)),
       ),
+    );
+  }
+
+  /// Creates a [RadioThemeData] configured with Mechanix specifications.
+  static RadioThemeData _createRadioTheme(ColorScheme colorScheme) {
+    return RadioThemeData(
+      mouseCursor: WidgetStateProperty.resolveWith<MouseCursor>((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return SystemMouseCursors.basic;
+        }
+        return SystemMouseCursors.click;
+      }),
+      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return colorScheme.onSurface.withValues(alpha: 0.38);
+        }
+        if (states.contains(WidgetState.selected)) {
+          return colorScheme.primary;
+        }
+        if (states.contains(WidgetState.hovered) ||
+            states.contains(WidgetState.focused) ||
+            states.contains(WidgetState.pressed)) {
+          return colorScheme.onSurface;
+        }
+        return colorScheme.onSurfaceVariant;
+      }),
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
+      splashRadius: 20.0,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      visualDensity: VisualDensity.standard,
     );
   }
 

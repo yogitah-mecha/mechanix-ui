@@ -14,6 +14,9 @@ enum ButtonVariant {
 
   /// Outlined border button style with transparent background.
   outline,
+
+  /// Text button style with transparent background and no border.
+  text,
 }
 
 /// Defines the pre-set sizing scale of the [MechanixButton].
