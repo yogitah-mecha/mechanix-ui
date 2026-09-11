@@ -30,6 +30,7 @@ abstract class ButtonStyleResolver {
   }) {
     final scheme = context.colorScheme;
     final isOutline = variant == ButtonVariant.outline;
+    final isText = variant == ButtonVariant.text;
     final shapeTheme = context.shape;
 
     // 1. Shape resolution:
@@ -44,8 +45,10 @@ abstract class ButtonStyleResolver {
 
     // 2. Color resolution pipeline:
     // Instance Override -> Scoped Theme -> Theme ColorScheme default
-    final defaultBg = isOutline ? Colors.transparent : scheme.secondaryFixedDim;
-    final defaultFg = isOutline ? scheme.onSurface : scheme.onPrimary;
+    final defaultBg =
+        (isOutline || isText) ? Colors.transparent : scheme.secondaryFixedDim;
+    final defaultFg =
+        (isOutline || isText) ? scheme.onSurface : scheme.onPrimary;
 
     final baseBg = customBackgroundColor ?? theme?.backgroundColor ?? defaultBg;
     final baseFg = customForegroundColor ?? theme?.foregroundColor ?? defaultFg;
@@ -56,6 +59,27 @@ abstract class ButtonStyleResolver {
     final backgroundColorProperty = WidgetStateProperty.resolveWith<Color?>((
       states,
     ) {
+      if (isText) {
+        if (states.contains(WidgetState.disabled)) {
+          return customDisabledColor ??
+              theme?.disabledColor ??
+              Colors.transparent;
+        }
+        if (states.contains(WidgetState.pressed)) {
+          return customPressedColor ??
+              theme?.pressedColor ??
+              Colors.transparent;
+        }
+        if (states.contains(WidgetState.hovered)) {
+          return customHoverColor ??
+              theme?.hoverColor ??
+              Colors.transparent;
+        }
+        return customBackgroundColor ??
+            theme?.backgroundColor ??
+            Colors.transparent;
+      }
+
       if (states.contains(WidgetState.disabled)) {
         return customDisabledColor ??
             theme?.disabledColor ??
@@ -90,7 +114,8 @@ abstract class ButtonStyleResolver {
         );
       }
       if (states.contains(WidgetState.focused)) {
-        final layerColor = isOutline ? Colors.transparent : scheme.onPrimary;
+        final layerColor =
+            isOutline ? Colors.transparent : scheme.onPrimary;
         return _applyStateLayer(
           baseColor: baseBg,
           stateLayerColor: layerColor,
@@ -117,7 +142,7 @@ abstract class ButtonStyleResolver {
       if (states.contains(WidgetState.hovered)) {
         return customHoverForegroundColor ??
             theme?.hoverForegroundColor ??
-            baseFg;
+            (isText ? scheme.onSecondaryContainer : baseFg);
       }
       return baseFg;
     });
@@ -144,6 +169,21 @@ abstract class ButtonStyleResolver {
           );
         }
         return BorderSide(color: baseBorderColor ?? scheme.outline, width: w);
+      } else if (isText) {
+        if (states.contains(WidgetState.focused) && showFocusIndicator) {
+          final focColor =
+              customFocusBorderColor ??
+              theme?.focusBorderColor ??
+              baseBorderColor ??
+              scheme.outline;
+          final focWidth = customBorderWidth ?? theme?.borderWidth ?? 3.0;
+          return BorderSide(color: focColor, width: focWidth);
+        }
+        if (baseBorderColor != null) {
+          final w = baseBorderWidth ?? 0.0;
+          return BorderSide(color: baseBorderColor, width: w);
+        }
+        return null;
       } else {
         if (baseBorderColor != null) {
           final w = baseBorderWidth ?? 0.0;
