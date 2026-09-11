@@ -522,7 +522,6 @@ void main() {
       WidgetTester tester,
     ) async {
       const activeColor = Color(0xFF00FF00);
-      const inactiveColor = Color(0xFFFF0000);
       const customTrack = Color(0xFF112233);
 
       final theme = SwitchThemeDataConfig(
@@ -531,7 +530,7 @@ void main() {
           if (states.contains(WidgetState.selected)) {
             return activeColor;
           }
-          return inactiveColor;
+          return const Color(0xFFFF0000);
         }),
       );
 
@@ -550,31 +549,189 @@ void main() {
         ),
       );
 
-      // Find handle (inside AnimatedPositioned 32x32)
-      final handle = tester.widget<AnimatedContainer>(
+      // The handle is the Container inside AnimatedPositioned.
+      final handle = tester.widget<Container>(
         find.descendant(
-          of: find.byWidgetPredicate(
-            (w) =>
-                w is AnimatedPositioned && w.width == 32.0 && w.height == 32.0,
-          ),
-          matching: find.byType(AnimatedContainer),
+          of: find.byType(AnimatedPositioned),
+          matching: find.byType(Container),
         ),
       );
+
       final handleDecoration = handle.decoration as BoxDecoration;
       expect(handleDecoration.color, equals(activeColor));
 
-      // Find track (88x40 container)
+      // The track is the AnimatedContainer with 88x40 dimensions.
       final track = tester.widget<AnimatedContainer>(
         find.byWidgetPredicate(
-          (w) =>
-              w is AnimatedContainer &&
-              w.constraints?.minWidth == 88.0 &&
-              w.constraints?.minHeight == 40.0,
+          (widget) =>
+              widget is AnimatedContainer &&
+              widget.constraints?.minWidth == 88.0 &&
+              widget.constraints?.minHeight == 40.0,
         ),
       );
+
       final trackDecoration = track.decoration as BoxDecoration;
       expect(trackDecoration.color, equals(customTrack));
     });
+
+    testWidgets(
+      'disabled switch sets canRequestFocus to false and skipTraversal to true',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(body: MechanixSwitch(value: false, onChanged: null)),
+          ),
+        );
+
+        final focusFinder = find.descendant(
+          of: find.byType(MechanixSwitch),
+          matching: find.byType(Focus),
+        );
+        final focusWidget = tester.widget<Focus>(focusFinder.first);
+        expect(focusWidget.canRequestFocus, isFalse);
+        expect(focusWidget.skipTraversal, isTrue);
+      },
+    );
+
+    testWidgets(
+      'tap with minor finger jitter (<10px drag) still toggles switch',
+      (WidgetTester tester) async {
+        bool currentValue = false;
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: StatefulBuilder(
+                builder: (context, setState) {
+                  return MechanixSwitch(
+                    value: currentValue,
+                    onChanged: (val) => setState(() => currentValue = val),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+
+        // Simulate a tap gesture where the finger moved 5px horizontally
+        await tester.drag(find.byType(MechanixSwitch), const Offset(5.0, 0.0));
+        await tester.pumpAndSettle();
+
+        expect(currentValue, isTrue);
+      },
+    );
+
+    testWidgets('renders long labels like CLOSED without overflow', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: MechanixTheme.light,
+          home: Scaffold(
+            body: MechanixSwitch(
+              value: false,
+              labelOff: 'CLOSED',
+              labelOn: 'OPEN',
+              onChanged: (val) {},
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('CLOSED'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('parent rebuild replacing FocusNode does not leak or throw', (
+      WidgetTester tester,
+    ) async {
+      final customNode = FocusNode();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MechanixSwitch(
+              value: false,
+              focusNode: null, // initially internal
+              onChanged: (val) {},
+            ),
+          ),
+        ),
+      );
+
+      // Rebuild with custom focusNode
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MechanixSwitch(
+              value: false,
+              focusNode: customNode,
+              onChanged: (val) {},
+            ),
+          ),
+        ),
+      );
+
+      // Rebuild back to null
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MechanixSwitch(
+              value: false,
+              focusNode: null,
+              onChanged: (val) {},
+            ),
+          ),
+        ),
+      );
+
+      customNode.dispose();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+      'renders inside height-constrained container without overflow',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                height: 36.0,
+                child: MechanixSwitch(value: false, onChanged: (val) {}),
+              ),
+            ),
+          ),
+        );
+
+        expect(tester.takeException(), isNull);
+        final renderBox = tester.renderObject<RenderBox>(
+          find.byType(MechanixSwitch),
+        );
+        expect(renderBox.size.height, equals(36.0));
+      },
+    );
+
+    testWidgets(
+      'supports MaterialTapTargetSize.shrinkWrap (88x40 dimensions)',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MechanixSwitch(
+                value: false,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                onChanged: (val) {},
+              ),
+            ),
+          ),
+        );
+
+        final renderBox = tester.renderObject<RenderBox>(
+          find.byType(MechanixSwitch),
+        );
+        expect(renderBox.size, equals(const Size(88.0, 40.0)));
+      },
+    );
   });
 
   group('SwitchThemeDataConfig Unit Tests', () {

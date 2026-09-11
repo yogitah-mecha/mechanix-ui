@@ -22,6 +22,8 @@ class MechanixSwitch extends StatefulWidget {
     this.autofocus = false,
     this.duration = const Duration(milliseconds: 200),
     this.curve = const Cubic(0.2, 0.0, 0.0, 1.0),
+    this.materialTapTargetSize,
+    this.visualDensity,
     this.theme,
   });
 
@@ -53,6 +55,16 @@ class MechanixSwitch extends StatefulWidget {
   /// Toggle animation easing curve.
   final Curve curve;
 
+  /// Configures the minimum size of the tap target area.
+  ///
+  /// Defaults to [ThemeData.materialTapTargetSize] (or [MaterialTapTargetSize.padded]).
+  final MaterialTapTargetSize? materialTapTargetSize;
+
+  /// Defines how compact the switch's layout will be.
+  ///
+  /// Defaults to [ThemeData.visualDensity].
+  final VisualDensity? visualDensity;
+
   /// Custom theme override for this switch instance.
   final SwitchThemeDataConfig? theme;
 
@@ -72,18 +84,25 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
   static const double _targetWidth = 96.0;
   static const double _targetHeight = 48.0;
 
-  late FocusNode _focusNode;
+  FocusNode? _internalFocusNode;
+  FocusNode get _effectiveFocusNode =>
+      widget.focusNode ?? (_internalFocusNode ??= FocusNode());
+
   bool _isHovered = false;
   bool _isPressed = false;
   bool _isFocused = false;
   bool _isDragging = false;
   double _dragPosition = 0.0;
 
+  void _initFocusNode() {
+    _internalFocusNode = widget.focusNode == null ? FocusNode() : null;
+    _effectiveFocusNode.addListener(_handleFocusChange);
+  }
+
   @override
   void initState() {
     super.initState();
-    _focusNode = widget.focusNode ?? FocusNode();
-    _focusNode.addListener(_handleFocusChange);
+    _initFocusNode();
     _dragPosition = widget.value ? _handleTravelDistance : 0.0;
   }
 
@@ -91,9 +110,19 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
   void didUpdateWidget(MechanixSwitch oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.focusNode != oldWidget.focusNode) {
-      oldWidget.focusNode?.removeListener(_handleFocusChange);
-      _focusNode = widget.focusNode ?? FocusNode();
-      _focusNode.addListener(_handleFocusChange);
+      (oldWidget.focusNode ?? _internalFocusNode)?.removeListener(
+        _handleFocusChange,
+      );
+      if (widget.focusNode != null) {
+        _internalFocusNode?.dispose();
+        _internalFocusNode = null;
+      } else {
+        _internalFocusNode ??= FocusNode();
+      }
+      _effectiveFocusNode.addListener(_handleFocusChange);
+    }
+    if (!widget.isEnabled && _effectiveFocusNode.hasFocus) {
+      _effectiveFocusNode.unfocus();
     }
     if (widget.value != oldWidget.value && !_isDragging) {
       _dragPosition = widget.value ? _handleTravelDistance : 0.0;
@@ -102,18 +131,15 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
 
   @override
   void dispose() {
-    if (widget.focusNode == null) {
-      _focusNode.dispose();
-    } else {
-      _focusNode.removeListener(_handleFocusChange);
-    }
+    _effectiveFocusNode.removeListener(_handleFocusChange);
+    _internalFocusNode?.dispose();
     super.dispose();
   }
 
   void _handleFocusChange() {
     if (mounted) {
       setState(() {
-        _isFocused = _focusNode.hasFocus;
+        _isFocused = _effectiveFocusNode.hasFocus && widget.isEnabled;
       });
     }
   }
@@ -199,6 +225,12 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
       theme: mergedTheme,
     );
 
+    final isDragActive = _isDragging
+        ? (_dragPosition >= (_handleTravelDistance / 2))
+        : widget.value;
+
+    final currentText = isDragActive ? widget.labelOn : widget.labelOff;
+
     final handleLeft = _isDragging
         ? (_padding + _dragPosition)
         : (widget.value ? (_padding + _handleTravelDistance) : _padding);
@@ -212,8 +244,6 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
           fontWeight: FontWeight.w400,
           letterSpacing: 0.15,
         );
-
-    final currentText = widget.value ? widget.labelOn : widget.labelOff;
 
     Widget handle = Container(
       width: _handleSize,
@@ -244,6 +274,64 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
       );
     }
 
+    Widget labelContent = Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: AnimatedDefaultTextStyle(
+            duration: widget.duration,
+            curve: widget.curve,
+            style: baseTextStyle.copyWith(color: resolvedStyle.textColor),
+            child: Text(
+              currentText.toUpperCase(),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final double labelOpacity;
+    final double labelLeft;
+
+    if (_isDragging) {
+      final half = _handleTravelDistance / 2;
+      if (_dragPosition < half) {
+        labelLeft = _padding + _handleSize;
+        labelOpacity = (1.0 - (_dragPosition / half)).clamp(0.0, 1.0);
+      } else {
+        labelLeft = _padding;
+        labelOpacity = ((_dragPosition - half) / half).clamp(0.0, 1.0);
+      }
+    } else {
+      labelLeft = widget.value ? _padding : (_padding + _handleSize);
+      labelOpacity = 1.0;
+    }
+
+    Widget labelLayer;
+    if (_isDragging) {
+      labelLayer = Positioned(
+        left: labelLeft,
+        top: _padding,
+        width: _handleTravelDistance,
+        height: _handleSize,
+        child: Opacity(opacity: labelOpacity, child: labelContent),
+      );
+    } else {
+      labelLayer = AnimatedPositioned(
+        duration: widget.duration,
+        curve: widget.curve,
+        left: labelLeft,
+        top: _padding,
+        width: _handleTravelDistance,
+        height: _handleSize,
+        child: Opacity(opacity: labelOpacity, child: labelContent),
+      );
+    }
+
     Widget visualTrack = AnimatedContainer(
       duration: widget.duration,
       curve: widget.curve,
@@ -254,28 +342,7 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
         alignment: Alignment.centerLeft,
         children: [
           // 1. Text Label Layer
-          if (widget.showLabel)
-            AnimatedPositioned(
-              duration: widget.duration,
-              curve: widget.curve,
-              left: widget.value ? _padding : (_padding + _handleSize),
-              top: _padding,
-              width: _handleTravelDistance,
-              height: _handleSize,
-              child: Center(
-                child: AnimatedDefaultTextStyle(
-                  duration: widget.duration,
-                  curve: widget.curve,
-                  style: baseTextStyle.copyWith(color: resolvedStyle.textColor),
-                  child: Text(
-                    currentText.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            ),
+          if (widget.showLabel) labelLayer,
 
           // 2. Sliding Square Handle
           handle,
@@ -286,58 +353,102 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
     final focusBorder = resolvedStyle.focusBorder;
     final focusBorderWidth = mergedTheme.focusBorderWidth ?? 1.0;
 
-    Widget switchBox = AnimatedContainer(
-      duration: widget.duration,
-      curve: widget.curve,
-      width: _targetWidth,
-      height: _targetHeight,
-      decoration: BoxDecoration(
-        border: focusBorder != null
-            ? Border.fromBorderSide(focusBorder)
-            : Border.all(color: Colors.transparent, width: focusBorderWidth),
-      ),
-      child: Center(child: visualTrack),
+    final effectiveTapTargetSize =
+        widget.materialTapTargetSize ?? Theme.of(context).materialTapTargetSize;
+    final effectiveVisualDensity =
+        widget.visualDensity ?? Theme.of(context).visualDensity;
+
+    final baseTargetWidth =
+        effectiveTapTargetSize == MaterialTapTargetSize.shrinkWrap
+        ? _trackWidth
+        : _targetWidth;
+    final baseTargetHeight =
+        effectiveTapTargetSize == MaterialTapTargetSize.shrinkWrap
+        ? _trackHeight
+        : _targetHeight;
+
+    final densityAdjustment = effectiveVisualDensity.baseSizeAdjustment;
+    final targetWidth = (baseTargetWidth + densityAdjustment.dx).clamp(
+      _trackWidth,
+      double.infinity,
+    );
+    final targetHeight = (baseTargetHeight + densityAdjustment.dy).clamp(
+      _trackHeight,
+      double.infinity,
     );
 
-    // 96x48px Hug Container and Tap Target Area
     return Focus(
-      focusNode: _focusNode,
+      focusNode: _effectiveFocusNode,
       autofocus: widget.autofocus,
+      canRequestFocus: widget.isEnabled,
+      skipTraversal: !widget.isEnabled,
       onKeyEvent: _handleKeyEvent,
-      child: Center(
-        widthFactor: 1.0,
-        heightFactor: 1.0,
-        child: MouseRegion(
-          cursor: widget.isEnabled
-              ? SystemMouseCursors.click
-              : SystemMouseCursors.basic,
-          onEnter: (_) {
-            if (widget.isEnabled) setState(() => _isHovered = true);
-          },
-          onExit: (_) {
-            if (widget.isEnabled) setState(() => _isHovered = false);
-          },
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _handleTap,
-            onTapDown: (_) {
-              if (widget.isEnabled) setState(() => _isPressed = true);
-            },
-            onTapUp: (_) {
-              if (widget.isEnabled) setState(() => _isPressed = false);
-            },
-            onTapCancel: () {
-              if (widget.isEnabled && !_isDragging) {
-                setState(() => _isPressed = false);
-              }
-            },
-            onHorizontalDragStart: _handleDragStart,
-            onHorizontalDragUpdate: _handleDragUpdate,
-            onHorizontalDragEnd: _handleDragEnd,
-            onHorizontalDragCancel: _handleDragCancel,
-            child: switchBox,
-          ),
-        ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxW = constraints.maxWidth;
+          final maxH = constraints.maxHeight;
+
+          final resolvedWidth = maxW.isFinite
+              ? targetWidth.clamp(0.0, maxW)
+              : targetWidth;
+          final resolvedHeight = maxH.isFinite
+              ? targetHeight.clamp(0.0, maxH)
+              : targetHeight;
+
+          Widget switchBox = AnimatedContainer(
+            duration: widget.duration,
+            curve: widget.curve,
+            width: resolvedWidth,
+            height: resolvedHeight,
+            decoration: BoxDecoration(
+              border: focusBorder != null
+                  ? Border.fromBorderSide(focusBorder)
+                  : Border.all(
+                      color: Colors.transparent,
+                      width: focusBorderWidth,
+                    ),
+            ),
+            child: Center(
+              child: FittedBox(fit: BoxFit.scaleDown, child: visualTrack),
+            ),
+          );
+
+          return Center(
+            widthFactor: 1.0,
+            heightFactor: 1.0,
+            child: MouseRegion(
+              cursor: widget.isEnabled
+                  ? SystemMouseCursors.click
+                  : SystemMouseCursors.basic,
+              onEnter: (_) {
+                if (widget.isEnabled) setState(() => _isHovered = true);
+              },
+              onExit: (_) {
+                if (widget.isEnabled) setState(() => _isHovered = false);
+              },
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _handleTap,
+                onTapDown: (_) {
+                  if (widget.isEnabled) setState(() => _isPressed = true);
+                },
+                onTapUp: (_) {
+                  if (widget.isEnabled) setState(() => _isPressed = false);
+                },
+                onTapCancel: () {
+                  if (widget.isEnabled && !_isDragging) {
+                    setState(() => _isPressed = false);
+                  }
+                },
+                onHorizontalDragStart: _handleDragStart,
+                onHorizontalDragUpdate: _handleDragUpdate,
+                onHorizontalDragEnd: _handleDragEnd,
+                onHorizontalDragCancel: _handleDragCancel,
+                child: switchBox,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
