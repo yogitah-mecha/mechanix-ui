@@ -28,3 +28,6 @@ export 'src/components/icon_button/icon_button.dart';
 export 'src/components/radio/radio.dart';
 export 'src/components/radio/radio_theme.dart';
 export 'src/components/snackbar/snackbar.dart';
+export 'src/components/switch/switch_style.dart';
+export 'src/components/switch/switch_theme.dart';
+export 'src/components/switch/switch.dart';
