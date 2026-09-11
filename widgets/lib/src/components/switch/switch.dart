@@ -171,14 +171,19 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
     });
   }
 
-  void _handleKeyEvent(FocusNode node, KeyEvent event) {
-    if (!widget.isEnabled) return;
-    if (event is KeyDownEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.space ||
-          event.logicalKey == LogicalKeyboardKey.enter) {
-        _handleTap();
-      }
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (!widget.isEnabled) {
+      return KeyEventResult.ignored;
     }
+
+    if (event is KeyDownEvent &&
+        (event.logicalKey == LogicalKeyboardKey.space ||
+            event.logicalKey == LogicalKeyboardKey.enter)) {
+      _handleTap();
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
   }
 
   @override
@@ -198,8 +203,6 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
         ? (_padding + _dragPosition)
         : (widget.value ? (_padding + _handleTravelDistance) : _padding);
 
-    final effectiveDuration = _isDragging ? Duration.zero : widget.duration;
-
     // Text style
     final baseTextStyle =
         resolvedStyle.textStyle ??
@@ -211,6 +214,35 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
         );
 
     final currentText = widget.value ? widget.labelOn : widget.labelOff;
+
+    Widget handle = Container(
+      width: _handleSize,
+      height: _handleSize,
+      decoration: BoxDecoration(
+        color: resolvedStyle.handleColor,
+        border: Border.fromBorderSide(resolvedStyle.handleBorder),
+      ),
+    );
+
+    if (_isDragging) {
+      handle = Positioned(
+        left: handleLeft,
+        top: _padding,
+        width: _handleSize,
+        height: _handleSize,
+        child: handle,
+      );
+    } else {
+      handle = AnimatedPositioned(
+        duration: widget.duration,
+        curve: widget.curve,
+        left: handleLeft,
+        top: _padding,
+        width: _handleSize,
+        height: _handleSize,
+        child: handle,
+      );
+    }
 
     Widget visualTrack = AnimatedContainer(
       duration: widget.duration,
@@ -234,10 +266,7 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
                 child: AnimatedDefaultTextStyle(
                   duration: widget.duration,
                   curve: widget.curve,
-                  style: baseTextStyle.copyWith(
-                    color: resolvedStyle.textColor,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: baseTextStyle.copyWith(color: resolvedStyle.textColor),
                   child: Text(
                     currentText.toUpperCase(),
                     textAlign: TextAlign.center,
@@ -249,22 +278,7 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
             ),
 
           // 2. Sliding Square Handle
-          AnimatedPositioned(
-            duration: effectiveDuration,
-            curve: widget.curve,
-            left: handleLeft,
-            top: _padding,
-            width: _handleSize,
-            height: _handleSize,
-            child: AnimatedContainer(
-              duration: effectiveDuration,
-              curve: widget.curve,
-              decoration: BoxDecoration(
-                color: resolvedStyle.handleColor,
-                border: Border.fromBorderSide(resolvedStyle.handleBorder),
-              ),
-            ),
-          ),
+          handle,
         ],
       ),
     );
@@ -289,10 +303,7 @@ class _MechanixSwitchState extends State<MechanixSwitch> {
     return Focus(
       focusNode: _focusNode,
       autofocus: widget.autofocus,
-      onKeyEvent: (node, event) {
-        _handleKeyEvent(node, event);
-        return KeyEventResult.ignored;
-      },
+      onKeyEvent: _handleKeyEvent,
       child: Center(
         widthFactor: 1.0,
         heightFactor: 1.0,
