@@ -31,3 +31,5 @@ export 'src/components/snackbar/snackbar.dart';
 export 'src/components/switch/switch_style.dart';
 export 'src/components/switch/switch_theme.dart';
 export 'src/components/switch/switch.dart';
+export 'src/components/progress_indicator/progress_indicator_theme.dart';
+export 'src/components/progress_indicator/progress_indicator.dart';

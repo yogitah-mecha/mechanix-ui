@@ -141,6 +141,12 @@ class AppSidebar extends StatelessWidget {
                 title: 'Switch',
                 icon: Icons.toggle_on_outlined,
               ),
+              _buildNavItem(
+                context,
+                id: 'progress_indicators',
+                title: 'Progress Indicators',
+                icon: Icons.refresh_rounded,
+              ),
             ],
           ),
         ),

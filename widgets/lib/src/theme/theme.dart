@@ -259,8 +259,26 @@ abstract class MechanixTheme extends StatefulWidget {
         colorScheme,
         createTextTheme(textColor: colorScheme.onSurface),
       ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: colorScheme.primary,
+        linearTrackColor: colorScheme.secondaryContainer,
+        circularTrackColor: colorScheme.secondaryContainer,
+      ),
       extensions: [
         ShapeTheme.standard(),
+        ProgressIndicatorThemeDataConfig(
+          circularTrackColor: colorScheme.secondaryContainer,
+          circularProgressColor: colorScheme.primary,
+          circularStrokeCap: StrokeCap.round,
+          standardCircularSize: 40.0,
+          standardCircularStrokeWidth: 4.0,
+          largeCircularSize: 44.0,
+          largeCircularStrokeWidth: 8.0,
+          linearTrackColor: colorScheme.secondaryContainer,
+          linearProgressColor: colorScheme.onSurfaceVariant,
+          standardLinearHeight: 4.0,
+          largeLinearHeight: 8.0,
+        ),
         CheckboxThemeDataConfig(
           focusRingColor: colorScheme.outline,
           focusRingWidth: 2.0,
