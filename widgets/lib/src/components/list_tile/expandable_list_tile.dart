@@ -521,7 +521,12 @@ class _MechanixExpandableListTileState extends State<MechanixExpandableListTile>
               child: Align(
                 alignment: Alignment.centerLeft,
                 heightFactor: _heightFactor.value,
-                child: child,
+                // Hidden children are still built: keep keyboard focus
+                // (↑/↓, Tab) off them while collapsed.
+                child: ExcludeFocus(
+                  excluding: !_isExpanded && _controller.isDismissed,
+                  child: child!,
+                ),
               ),
             ),
           ],

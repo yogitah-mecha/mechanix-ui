@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'keyboard_list.dart';
 import 'list_tile_enums.dart';
 import 'list_tile_theme.dart';
 
+export 'keyboard_list.dart';
 export 'list_tile_enums.dart';
 export 'list_tile_theme.dart';
 
@@ -241,6 +243,41 @@ class _MechanixListTileState extends State<MechanixListTile> {
   bool _isHovered = false;
   bool _isPressed = false;
   bool _isFocused = false;
+
+  /// Used when [MechanixListTile.focusNode] is null.
+  FocusNode? _ownFocusNode;
+  FocusNode get _focusNode =>
+      widget.focusNode ??
+      (_ownFocusNode ??= FocusNode(debugLabel: 'MechanixListTile'));
+
+  /// The list this tile is a row of, for ↑/↓.
+  MechanixKeyboardListState? _keyboardList;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final list = MechanixKeyboardList.maybeOf(context);
+    if (list != _keyboardList) {
+      _keyboardList?.unregister(_focusNode);
+      _keyboardList = list?..register(_focusNode, context);
+    }
+  }
+
+  @override
+  void didUpdateWidget(MechanixListTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      _keyboardList?.unregister(oldWidget.focusNode ?? _ownFocusNode!);
+      _keyboardList?.register(_focusNode, context);
+    }
+  }
+
+  @override
+  void dispose() {
+    _keyboardList?.unregister(_focusNode);
+    _ownFocusNode?.dispose();
+    super.dispose();
+  }
 
   void _handleHover(bool hovering) {
     if (!widget.enabled) return;
@@ -605,10 +642,21 @@ class _MechanixListTileState extends State<MechanixListTile> {
 
     return FocusableActionDetector(
       enabled: widget.enabled,
-      focusNode: widget.focusNode,
+      focusNode: _focusNode,
       autofocus: widget.autofocus,
       onShowHoverHighlight: _handleHover,
       onShowFocusHighlight: _handleFocusChange,
+      // Enter/Space on the focused tile acts like a tap. Without onTap the
+      // key is left for an ancestor to handle.
+      actions: {
+        if (widget.onTap != null)
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap!();
+              return null;
+            },
+          ),
+      },
       mouseCursor: widget.enabled
           ? (hasInteractions
                 ? SystemMouseCursors.click
@@ -702,6 +750,12 @@ class MechanixList extends StatelessWidget {
 
     if (padding != null) {
       content = Padding(padding: padding!, child: content);
+    }
+
+    // ↑/↓ between the tiles. A list inside another (e.g. the children of an
+    // expandable tile) joins the outer one, so the keys move through both.
+    if (MechanixKeyboardList.maybeOf(context) == null) {
+      content = MechanixKeyboardList(child: content);
     }
 
     return content;

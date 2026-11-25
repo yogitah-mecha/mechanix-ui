@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widgets/widgets.dart';
 
@@ -374,14 +375,15 @@ void main() {
       expect(find.byIcon(Icons.favorite), findsOneWidget);
       expect(find.byIcon(Icons.star), findsOneWidget);
 
+      // The Row holding the leading widgets (the tile's inner Row also has
+      // 3 children: leading, gap, content).
       final row = tester.widget<Row>(
-        find.descendant(
-          of: find.byType(MechanixListTile),
-          matching: find.byWidgetPredicate(
-            (w) =>
-                w is Row && w.children.length == 3, // favorite, SizedBox, star
-          ),
-        ),
+        find
+            .ancestor(
+              of: find.byIcon(Icons.favorite),
+              matching: find.byType(Row),
+            )
+            .first,
       );
       expect(row.children.length, equals(3));
       final gapBox = row.children[1] as SizedBox;
@@ -409,6 +411,98 @@ void main() {
 
       expect(find.byIcon(Icons.check_box), findsNothing);
       expect(find.byIcon(Icons.star_outline), findsNothing);
+    });
+
+    group('keyboard', () {
+      Future<FocusNode> pumpFocused(
+        WidgetTester tester, {
+        VoidCallback? onTap,
+        bool enabled = true,
+        Widget? trailing,
+      }) async {
+        final node = FocusNode();
+        addTearDown(node.dispose);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: MechanixTheme.dark,
+            home: Scaffold(
+              body: MechanixListTile(
+                labelText: 'Keyboard Tile',
+                focusNode: node,
+                enabled: enabled,
+                onTap: onTap,
+                trailingWidgets: [?trailing],
+              ),
+            ),
+          ),
+        );
+        node.requestFocus();
+        await tester.pump();
+        return node;
+      }
+
+      testWidgets('Enter and Space on the focused tile call onTap', (
+        WidgetTester tester,
+      ) async {
+        var taps = 0;
+        await pumpFocused(tester, onTap: () => taps++);
+
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.sendKeyEvent(LogicalKeyboardKey.numpadEnter);
+        await tester.sendKeyEvent(LogicalKeyboardKey.space);
+        await tester.pump();
+
+        expect(taps, 3);
+      });
+
+      testWidgets('a disabled tile ignores Enter', (WidgetTester tester) async {
+        var taps = 0;
+        await pumpFocused(tester, onTap: () => taps++, enabled: false);
+
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pump();
+
+        expect(taps, 0);
+      });
+
+      testWidgets('without onTap, Enter is left to an ancestor', (
+        WidgetTester tester,
+      ) async {
+        final node = await pumpFocused(tester);
+        expect(node.hasFocus, isTrue);
+
+        final handled = await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+
+        expect(handled, isFalse);
+      });
+
+      testWidgets('Enter on a focused switch in the tile toggles only it', (
+        WidgetTester tester,
+      ) async {
+        var taps = 0;
+        var switched = false;
+        final switchNode = FocusNode();
+        addTearDown(switchNode.dispose);
+        await pumpFocused(
+          tester,
+          onTap: () => taps++,
+          trailing: StatefulBuilder(
+            builder: (context, setState) => Switch(
+              focusNode: switchNode,
+              value: switched,
+              onChanged: (v) => setState(() => switched = v),
+            ),
+          ),
+        );
+        switchNode.requestFocus();
+        await tester.pump();
+
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pump();
+
+        expect(switched, isTrue);
+        expect(taps, 0);
+      });
     });
   });
 }
